@@ -1,0 +1,67 @@
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class FakeArt {
+    private <T,U> void setValue(T obj , String fieldName , U otherObj) throws Exception
+    {
+        String setMethodName = "set" + toCapt(fieldName);
+        otherObj.getClass().getMethod( setMethodName , getType(otherObj,fieldName)).invoke(otherObj,getValue(obj,fieldName));
+    }
+    private <T,U> void setValue (T obj , String fieldName ,  Class type , U Value) throws Exception
+    {
+        String setMethodName = "set" + toCapt(fieldName);
+        obj.getClass().getMethod(setMethodName,type).invoke(obj,Value);
+    }
+    private <T> Object getValue(T obj , String fieldName) throws Exception
+    {
+        String methodName = "get" + toCapt(fieldName);
+        return obj.getClass().getMethod(methodName).invoke(obj);
+    }
+    private <T> Class getType(T obj ,String fieldName ) throws Exception
+    {
+        String methodName = "get" + toCapt(fieldName);
+        return obj.getClass().getMethod(methodName).getReturnType();
+    }
+    private String toCapt(String name)
+    {
+        return name.substring(0,1).toUpperCase()+name.substring(1);
+    }
+    private String[] deepProps (String base , String[] props)
+    {
+        ArrayList<String> ret = new ArrayList<>();
+        for (String s : props)
+        {
+            if (s.startsWith(base)&&(s.contains(".")))
+            {
+                ret.add(s.substring(s.indexOf(".")+1));
+            }
+        }
+        String[] retArr = new String[ret.size()];
+        return ret.toArray(retArr);
+    }
+    private <T> T recursiveFake(T original , String[] props) throws Exception
+    {
+        if (original == null)
+            System.out.println("the original is null");
+
+        T copy = (T) original.getClass().getDeclaredConstructor().newInstance();
+
+        for (String s : props)
+        {
+            if ((!s.contains(".")))
+            {
+                setValue(original,s,copy);
+            }else{
+                String p1 = s.substring(0,s.indexOf("."));
+                setValue( copy , p1 , getType(original,p1) , recursiveFake(getValue(original,p1) , deepProps(p1,props)));
+            }
+        }
+        return copy;
+    }
+    public <T> T fake(T original, String... props) throws Exception
+    {
+        if (original == null)
+            System.out.println("the original is null");
+        return recursiveFake(original,props);
+    }
+}
