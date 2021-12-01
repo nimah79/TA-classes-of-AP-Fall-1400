@@ -1,0 +1,169 @@
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Scanner;
+
+class dog {
+    public String name;
+    public int age;
+    public dog(String name , int age)
+    {
+        this.name = name;
+        this.age = age;
+    }
+    public void bark ()
+    {
+        System.out.println("woof woof");
+    }
+    public void count()
+    {
+        System.out.println("I cant count bro :(");
+    }
+}
+class cat{
+    public String name;
+    public int age;
+    public cat()
+    {
+        this.name = "my cat";
+        this.age = 15;
+    }
+    public cat(String name , int age)
+    {
+        this.name = name;
+        this.age = age;
+    }
+    public void meow()
+    {
+        System.out.println("meow meow");
+    }
+    public String getName()
+    {
+        return this.name;
+    }
+    public int grow()
+    {
+        this.age++;
+        return this.age;
+    }
+    public String changeName(String newName)
+    {
+        this.name = newName;
+        return this.name;
+    }
+    public int getAge()
+    {
+        return this.age;
+    }
+    public String talk (String what , int times , double weight)
+    {
+        return "i will say " + what +" "+times +" times " + " and i am " + weight + " kilograms";
+    }
+}
+class germanShepherd extends dog{
+    public germanShepherd(String name , int age)
+    {
+        super(name,age);
+    }
+    public void bark()
+    {
+        System.out.println("im a different breed from the other one woof woof");
+    }
+    public void Shepherd()
+    {
+        System.out.println("Shepherding :)");
+    }
+}
+public class Example {
+    public static void main(String[] args) throws Exception {
+
+        //1 - why reflections and instanceof usage
+        int mode;
+        Scanner input = new Scanner(System.in);
+        mode = input.nextInt();
+
+        Object catDog = mode%2==0 ? new cat("pishi",mode) : new dog("hapoo" , mode);
+        if (catDog instanceof cat)
+        {
+            ((cat) catDog).meow();
+        }else
+        {
+            ((dog) catDog).bark();
+        }
+
+        //2 - class object type and getting it from a object
+        dog D = new dog("sag" , 13);
+        Class s = dog.class;
+        System.out.println(s);
+        s = D.getClass();
+        System.out.println(s);
+        s = Class.forName("dog");
+        System.out.println(s);
+
+        //3 - instanceof and getClass test
+        germanShepherd g = new germanShepherd("new sag" , 13);
+        if (g instanceof dog)
+            System.out.println("g is instance of dog");
+        if (g.getClass().equals(dog.class))
+            System.out.println("g is the same as a dog");
+        if (dog.class.isInstance(g))
+            System.out.println("g is a subclass of dog");
+
+        //4 - getting the fields of a class
+        cat c = new cat("kitty" , 6);
+        Class catClass = c.getClass();
+        Field[] fields = catClass.getFields();
+        for (Field f : fields)
+        {
+            if (f.getName().equals("name"))
+            {
+                Object value = f.get(c);
+                String name = (String)value;
+                System.out.println(name);
+                f.set(c , "Ghoorba");
+                System.out.println(c.getName());
+            }
+            if (f.getName().equals("age"))
+            {
+                Object value = f.get(c);
+                Integer age = (Integer) value;
+                System.out.println(age);
+                f.set(c , 12);
+                System.out.println(c.getAge());
+            }
+        }
+
+        //5 - getting the methods of a class
+        Method meow = catClass.getMethod("meow");
+        meow.invoke(c);
+
+        System.out.println(c.getName());
+        Method setName = catClass.getMethod("changeName", String.class);
+        setName.invoke(c,"my cat");
+        System.out.println(c.getName());
+
+        Method talk = catClass.getMethod("talk", String.class, int.class, double.class);
+        System.out.println(talk.invoke(c,"hi" , 2 , 12.5));
+
+        /*germanShepherd gs = new germanShepherd("gh" , 10);
+        Class gsc = gs.getClass();
+        Method[] gsdm = gsc.getDeclaredMethods();
+        Method[] gsm = gsc.getMethods();
+        for (Method m : gsdm)
+            System.out.println(m.getName());
+        for (Method m : gsm)
+            System.out.println(m.getName());
+        */
+
+        //6 - getting the constructors of a class
+        Constructor catcon = catClass.getConstructor(String.class , int.class);
+        Constructor catcon2 = catClass.getConstructor();
+        Object cat_catCon = catcon.newInstance("mewo cat" , 15);
+        cat c1 = (cat) cat_catCon;
+        System.out.println(c1.getName());
+        Object cat_catcon2 = catcon2.newInstance();
+        cat c2 = (cat) cat_catcon2;
+        System.out.println(c2.getName());
+
+    }
+}
